@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Viral GIF - Ultimate Mobile Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* === Premium Fluid Variables & Performance === */
+        :root { --bg: #000000; --surface: #121212; --surface-light: #222; --accent: #ff0050; --accent-blue: #00f2fe; --text: #fff; --text-muted: #999; --radius: 16px; }
+        html { scroll-behavior: smooth; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; }
+
+        /* === Header === */
+        header { position: sticky; top: 0; z-index: 100; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); transform: translateZ(0); }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+        .brand { font-size: clamp(1.2rem, 5vw, 1.5rem); font-weight: 800; background: linear-gradient(45deg, var(--accent), var(--accent-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: flex; align-items: center; gap: 8px; }
+        
+        .action-icons { display: flex; gap: 10px; }
+        .icon-btn { background: var(--surface-light); border: none; color: white; width: 34px; height: 34px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); font-size: 0.9rem; will-change: transform; }
+        .icon-btn:active { transform: scale(0.85); }
+
+        .search-box { display: flex; background: var(--surface); border-radius: 30px; border: 1px solid var(--surface-light); padding: 4px; width: 100%; transition: border-color 0.3s ease; }
+        .search-box:focus-within { border-color: var(--accent-blue); }
+        .search-box input { flex: 1; background: transparent; border: none; color: var(--text); font-size: 0.95rem; outline: none; padding: 8px 15px; width: 100%; min-width: 0; }
+        .search-box button { background: var(--accent); color: white; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 1rem; flex-shrink: 0; transition: transform 0.2s; }
+        .search-box button:active { transform: scale(0.9); }
+
+        /* Chips */
+        .chips { display: flex; gap: 8px; overflow-x: auto; padding: 12px 15px; scrollbar-width: none; background: var(--bg); -webkit-overflow-scrolling: touch; }
+        .chips::-webkit-scrollbar { display: none; }
+        .chip { background: var(--surface); border: 1px solid var(--surface-light); color: var(--text-muted); padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; cursor: pointer; transition: all 0.3s ease; }
+        .chip.active { background: white; color: black; border-color: white; transform: scale(1.05); }
+
+        /* === Sponsored Banner (Direct Link) === */
+        .sponsored-banner { display: block; margin: 0 15px 10px; background: linear-gradient(90deg, #1a1a1a, #2a2a2a); border-radius: 12px; padding: 12px 15px; text-decoration: none; color: white; border: 1px solid #333; position: relative; overflow: hidden; transition: transform 0.2s ease; }
+        .sponsored-banner:active { transform: scale(0.98); }
+        .sponsored-banner::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent); animation: shine 3s infinite; }
+        .sponsored-tag { font-size: 0.65rem; background: var(--accent-blue); color: black; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; display: inline-block; }
+        .sponsored-text { font-size: 0.9rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        .sponsored-text i { color: var(--accent-blue); animation: bounceRight 1.5s infinite; }
+        @keyframes shine { 100% { left: 200%; } }
+        @keyframes bounceRight { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+
+        /* === Gallery Layouts === */
+        main { flex: 1; padding: 5px 15px 20px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+        .gallery-masonry { column-count: 2; column-gap: 10px; }
+        @media (min-width: 600px) { .gallery-masonry { column-count: 3; } .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
+
+        /* === FIXED CARD ANIMATION === */
+        .gif-card { position: relative; border-radius: 12px; overflow: hidden; background: var(--surface); cursor: pointer; margin-bottom: 10px; break-inside: avoid; transform: translateZ(0); will-change: transform, opacity; animation: slideUpFade 0.5s ease forwards; opacity: 0; }
+        @keyframes slideUpFade { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .gallery-grid .gif-card { aspect-ratio: 1; margin-bottom: 0; }
+        .gif-card img { width: 100%; height: 100%; object-fit: cover; display: block; background: var(--surface-light); }
+        
+        .card-info { position: absolute; inset: 0; background: linear-gradient(transparent 50%, rgba(0,0,0,0.9)); display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; opacity: 1; transition: opacity 0.3s; }
+        .gif-title { font-size: 0.75rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 8px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+        .card-actions-row { display: flex; justify-content: space-between; }
+        .action-btn-small { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; font-size: 0.85rem; transition: transform 0.2s; }
+        .action-btn-small:active { transform: scale(0.8); }
+        .action-btn-small.fav.active { color: #ffeb3b; background: rgba(255, 235, 59, 0.25); }
+
+        .skeleton-box { background: linear-gradient(90deg, var(--surface) 25%, var(--surface-light) 50%, var(--surface) 75%); background-size: 200% 100%; animation: loading 1.5s infinite linear; border-radius: 12px; aspect-ratio: 1; margin-bottom: 10px; break-inside: avoid; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* === Fluid Bottom Sheet Modal === */
+        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: none; flex-direction: column; justify-content: flex-end; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.3s ease; }
+        .modal-bg.show { display: flex; opacity: 1; }
+        .modal-content { background: var(--surface); border-radius: 24px 24px 0 0; padding: 20px 15px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1); max-height: 92vh; overflow-y: auto; width: 100%; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+        .modal-bg.show .modal-content { transform: translateY(0); }
+        
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-header h3 { font-size: 1.2rem; font-weight: 800; }
+        .close-btn { background: var(--surface-light); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; transition: transform 0.2s; }
+        .close-btn:active { transform: scale(0.8); }
+
+        .meme-frame { position: relative; width: 100%; background: #000; border-radius: 12px; overflow: hidden; display: flex; justify-content: center; align-items: center; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .meme-frame img { max-width: 100%; max-height: 38vh; object-fit: contain; display: block; }
+        
+        /* Fluid Typography for Meme Text */
+        .meme-text { position: absolute; width: 95%; text-align: center; color: white; font-family: Impact, sans-serif; font-weight: 900; text-transform: uppercase; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000; pointer-events: none; word-wrap: break-word; line-height: 1.1; bottom: 10px; font-size: clamp(1.2rem, 6vw, 2.2rem); }
+        .meme-emoji { position: absolute; top: 10px; right: 10px; font-size: clamp(1.5rem, 8vw, 2.5rem); pointer-events: none; }
+
+        /* Auto-wrapping Tools */
+        .editor-inputs { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .editor-inputs input { flex: 2; min-width: 150px; }
+        .editor-inputs select { flex: 1; min-width: 80px; }
+        .editor-inputs input, .editor-inputs select { background: var(--bg); border: 1px solid var(--surface-light); padding: 12px 15px; border-radius: 10px; color: white; font-size: 0.95rem; outline: none; transition: border-color 0.3s; }
+        .editor-inputs input:focus, .editor-inputs select:focus { border-color: var(--accent); }
+        
+        /* Responsive Button Grid */
+        .btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+        .main-btn { padding: 14px; border-radius: 12px; border: none; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: transform 0.2s, filter 0.2s; will-change: transform; }
+        .main-btn:active { transform: scale(0.95); filter: brightness(0.9); }
+        .btn-share { background: linear-gradient(45deg, var(--accent-blue), #00b4db); color: #000; grid-column: 1 / -1; font-size: 1.05rem; box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3); } 
+        .btn-dl-gif { background: var(--surface-light); color: white; }
+        .btn-dl-png { background: white; color: black; }
+        
+        #slideshowUI { position: fixed; bottom: env(safe-area-inset-bottom, 20px); left: 50%; transform: translateX(-50%); background: rgba(255,0,80,0.95); color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; z-index: 1001; display: none; box-shadow: 0 5px 20px rgba(255,0,80,0.5); backdrop-filter: blur(5px); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-top">
+            <div class="brand"><i class="fas fa-play"></i> VIRAL GIF</div>
+            <div class="action-icons">
+                <button class="icon-btn" onclick="toggleLayout()" title="Change Layout"><i class="fas fa-th-large" id="layoutIcon"></i></button>
+                <button class="icon-btn" onclick="toggleSlideshow()" title="Slideshow"><i class="fas fa-tv"></i></button>
+            </div>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search vibes (funny, sad)...">
+            <button onclick="handleSearch()"><i class="fas fa-search"></i></button>
+        </div>
+    </header>
+
+    <div class="chips">
+        <button class="chip active" id="chip-trending" onclick="fetchTrending()">🔥 Trending</button>
+        <button class="chip" onclick="handleSearch('meme')">😂 Memes</button>
+        <button class="chip" onclick="handleSearch('aesthetic')">✨ Aesthetic</button>
+        <button class="chip" onclick="handleSearch('anime')">⛩️ Anime</button>
+        <button class="chip" id="chip-fav" onclick="showFavorites()">❤️ Saved</button>
+    </div>
+
+    <a href="https://omg10.com/4/10722095" target="_blank" class="sponsored-banner">
+        <div class="sponsored-tag">Sponsored</div>
+        <div class="sponsored-text">
+            Play Top Mobile Games & Win Prizes! <i class="fas fa-arrow-right"></i>
+        </div>
+    </a>
+
+    <main>
+        <div id="gallery" class="gallery-masonry"></div>
+    </main>
+
+    <div id="slideshowUI" onclick="toggleSlideshow()"><i class="fas fa-stop"></i> Stop Slideshow</div>
+
+    <div class="modal-bg" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share & Edit</h3>
+                <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="meme-frame" id="memeFrame">
+                <img id="modalImg" src="" alt="GIF Preview">
+                <div class="meme-text" id="overlayText"></div>
+                <div class="meme-emoji" id="overlayEmoji"></div>
+            </div>
+
+            <div class="editor-inputs">
+                <input type="text" id="memeInput" placeholder="Add text..." oninput="updateMeme()">
+                <select id="emojiInput" onchange="updateMeme()">
+                    <option value="">No Emoji</option>
+                    <option value="😂">😂</option>
+                    <option value="💀">💀</option>
+                    <option value="🔥">🔥</option>
+                    <option value="😭">😭</option>
+                    <option value="🥺">🥺</option>
+                    <option value="👑">👑</option>
+                </select>
+            </div>
+
+            <div class="btn-grid">
+                <button class="main-btn btn-share" onclick="nativeShare()">
+                    <i class="fab fa-whatsapp"></i> Share Directly
+                </button>
+                <button class="main-btn btn-dl-gif" onclick="downloadOriginalGif()">
+                    <i class="fas fa-download"></i> Original GIF
+                </button>
+                <button class="main-btn btn-dl-png" onclick="downloadMemeCard()">
+                    <i class="fas fa-image"></i> Meme (PNG)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>(function(s){s.dataset.zone='10722097',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+    <script>
+        // === POPUNDER 6 HOUR LOGIC ===
+        (function initPopunder() {
+            const POPUNDER_KEY = 'viral_gif_popunder_time';
+            const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+            const now = new Date().getTime();
+            const lastShown = localStorage.getItem(POPUNDER_KEY);
+
+            if (!lastShown || (now - parseInt(lastShown)) > SIX_HOURS_MS) {
+                // Time passed, show ad
+                (function(s){
+                    s.dataset.zone='10722090';
+                    s.src='https://al5sm.com/tag.min.js';
+                })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+                
+                // Update time in storage
+                localStorage.setItem(POPUNDER_KEY, now.toString());
+            }
+        })();
+        // ==============================
+
+        // GIPHY API (Fast and Reliable)
+        const API_KEY = 'GlVGYHqcVGWPNWk0DA98LNi13ceY02Z'; 
+        const gallery = document.getElementById('gallery');
+        let currentGifs = []; 
+        let favorites = JSON.parse(localStorage.getItem('ultimate_favs_v2')) || [];
+        let isGrid = false;
+        let slideshowInterval = null;
+        let slideIndex = 0;
+        let currentModalGif = { url: '', title: '' };
+
+        // 100% Working Fallback GIFs
+        const fallbackGifs = [
+            { id: 'f1', title: "Funny Cat", media: { url: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3A5ZXA1ZThqZnBqZXZpZndkZnhwZ2h1aG5qZzhqZ2h1aG5qZzhqZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oriO0OEd9QIDdllqo/giphy.gif" } },
+            { id: 'f2', title: "Laughing", media: { url: "https://media1.giphy.com/media/10JhviFuU2gWD6/giphy.gif" } },
+            { id: 'f3', title: "Dance", media: { url: "https://media3.giphy.com/media/l41Yh18f5TbiWHE0o/giphy.gif" } },
+            { id: 'f4', title: "Wow", media: { url: "https://media4.giphy.com/media/26ufdipQqUpiX5LEo/giphy.gif" } },
+            { id: 'f5', title: "Sad", media: { url: "https://media2.giphy.com/media/d2lcHJTG5Tscg/giphy.gif" } },
+            { id: 'f6', title: "Mind Blown", media: { url: "https://media1.giphy.com/media/l0IylOPKVkiVDZA0E/giphy.gif" } }
+        ];
+
+        window.onload = () => fetchTrending();
+
+        function setActiveChip(id) {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            if(id) document.getElementById(id).classList.add('active');
+        }
+
+        function showSkeletons() {
+            gallery.innerHTML = '';
+            for(let i=0; i<12; i++) {
+                gallery.innerHTML += `<div class="skeleton-box"></div>`;
+            }
+        }
+
+        async function fetchAPI(url) {
+            showSkeletons();
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("API Limit");
+                const data = await response.json();
+                
+                // Giphy format parsing
+                currentGifs = data.data.map(item => ({
+                    id: item.id,
+                    title: item.title || 'Viral GIF',
+                    media: { url: item.images.downsized_medium.url } // Faster loading
+                }));
+                
+                if(currentGifs.length === 0) throw new Error("Empty Data");
+                renderGallery(currentGifs);
+            } catch (error) {
+                console.log("API failed, loading fallbacks...", error);
+                currentGifs = fallbackGifs;
+                renderGallery(currentGifs);
+            }
+        }
+
+        function fetchTrending() {
+            setActiveChip('chip-trending');
+            fetchAPI(`https://api.giphy.com/v1/gifs/trending?api_key=${API_KEY}&limit=20&rating=g`);
+        }
+
+        function handleSearch(customQuery = null) {
+            const query = customQuery || document.getElementById('searchInput').value.trim();
+            if (!query) return;
+            document.getElementById('searchInput').value = customQuery ? '' : query;
+            document.getElementById('searchInput').blur();
+            setActiveChip('');
+            fetchAPI(`https://api.giphy.com/v1/gifs/search?api_key=${API_KEY}&q=${encodeURIComponent(query)}&limit=20&rating=g`);
+        }
+
+        function toggleLayout() {
+            isGrid = !isGrid;
+            gallery.className = isGrid ? 'gallery-grid' : 'gallery-masonry';
+            document.getElementById('layoutIcon').className = isGrid ? 'fas fa-grip-vertical' : 'fas fa-th-large';
+        }
+
+        function renderGallery(gifs) {
+            gallery.innerHTML = '';
+            gifs.forEach((gif, index) => {
+                if(!gif.media || !gif.media.url) return;
+                
+                const url = gif.media.url;
+                const title = gif.title || 'Viral Content';
+                const id = gif.id;
+                const isFav = favorites.some(f => f.id === id);
+
+                const card = document.createElement('div');
+                card.className = 'gif-card';
+                // Add slight delay for waterfall animation effect
+                card.style.animationDelay = `${(index % 10) * 0.05}s`;
+                card.onclick = () => openModal(url, title);
+                
+                card.innerHTML = `
+                    <img src="${url}" alt="${title}" loading="lazy">
+                    <div class="card-info">
+                        <div class="gif-title">${title}</div>
+                        <div class="card-actions-row">
+                            <button class="action-btn-small fav ${isFav ? 'active' : ''}" onclick="toggleFav(event, '${id}', '${url}', '${title.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <button class="action-btn-small" onclick="quickShare(event, '${url}', '${title.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-share"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
+        }
+
+        function toggleFav(e, id, url, title) {
+            e.stopPropagation(); 
+            const btn = e.currentTarget;
+            const index = favorites.findIndex(f => f.id === id);
+
+            if(index > -1) {
+                favorites.splice(index, 1);
+                btn.classList.remove('active');
+            } else {
+                favorites.push({ id, title, media: { url } });
+                btn.classList.add('active');
+            }
+            localStorage.setItem('ultimate_favs_v2', JSON.stringify(favorites));
+        }
+
+        function showFavorites() {
+            setActiveChip('chip-fav');
+            currentGifs = favorites;
+            if(favorites.length === 0) {
+                gallery.innerHTML = '<div style="color:var(--text-muted); text-align:center; width:100%; padding:40px; font-weight:600;">No saved GIFs yet! ❤️</div>';
+                return;
+            }
+            renderGallery(favorites);
+        }
+
+        function toggleSlideshow() {
+            const ui = document.getElementById('slideshowUI');
+            if(slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+                ui.style.display = 'none';
+                closeModal();
+            } else {
+                if(!currentGifs || currentGifs.length === 0) return;
+                ui.style.display = 'block';
+                slideIndex = 0;
+                playNextSlide();
+                slideshowInterval = setInterval(playNextSlide, 3500); 
+            }
+        }
+
+        function playNextSlide() {
+            if(slideIndex >= currentGifs.length) slideIndex = 0;
+            const gif = currentGifs[slideIndex];
+            if(gif && gif.media) {
+                openModal(gif.media.url, gif.title || 'Slideshow');
+            }
+            slideIndex++;
+        }
+
+        const modal = document.getElementById('modal');
+        function openModal(url, title) {
+            currentModalGif = { url, title };
+            document.getElementById('modalImg').src = url;
+            document.getElementById('memeInput').value = '';
+            document.getElementById('emojiInput').value = '';
+            updateMeme();
+            modal.style.display = 'flex';
+            // Slight delay allows display:flex to apply before transition class
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeModal() {
+            if(slideshowInterval) return; 
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.getElementById('modalImg').src = '';
+            }, 300);
+        }
+
+        function updateMeme() {
+            document.getElementById('overlayText').innerText = document.getElementById('memeInput').value;
+            document.getElementById('overlayEmoji').innerText = document.getElementById('emojiInput').value;
+        }
+
+        async function nativeShare() {
+            if (navigator.share) {
+                try { await navigator.share({ title: currentModalGif.title, url: currentModalGif.url }); } catch (err) { }
+            } else {
+                navigator.clipboard.writeText(currentModalGif.url);
+                alert("Link copied! Paste it anywhere.");
+            }
+        }
+
+        async function quickShare(e, url, title) {
+            e.stopPropagation();
+            if (navigator.share) {
+                try { await navigator.share({ title: title, url: url }); } catch (err) { }
+            } else {
+                navigator.clipboard.writeText(url);
+                alert("Link copied!");
+            }
+        }
+
+        async function downloadOriginalGif() {
+            try {
+                const response = await fetch(currentModalGif.url);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = `viral_${Date.now()}.gif`;
+                link.click();
+            } catch(e) {
+                alert("Direct download failed. Try sharing the link instead!");
+            }
+        }
+
+        function downloadMemeCard() {
+            const frame = document.getElementById('memeFrame');
+            html2canvas(frame, { useCORS: true, backgroundColor: '#000' }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `meme_${Date.now()}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener("keypress", (e) => {
+            if(e.key === "Enter") handleSearch();
+        });
+        modal.addEventListener('click', (e) => {
+            if(e.target === modal) closeModal();
+        });
+    </script>
+</body>
+</html>
